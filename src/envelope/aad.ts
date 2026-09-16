@@ -76,7 +76,7 @@ function assertNoSeparator(label: string, value: string): void {
   if (value.length === 0) {
     throw new VaultFormatError(`${label} must not be empty`, 'VAULT_BAD_AAD');
   }
-  if (value.indexOf('') !== -1) {
+  if (value.indexOf('\u001F') !== -1) {
     throw new VaultFormatError(
       `${label} must not contain the AAD separator`,
       'VAULT_BAD_AAD',
