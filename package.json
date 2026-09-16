@@ -1,0 +1,62 @@
+{
+  "name": "@waterlands/vault-core",
+  "version": "0.1.0",
+  "description": "Wire format and crypto for the Waterlands vault: client-side encryption of catch locations, species and notes.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "dist",
+    "FORMAT.md"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./crypto": {
+      "types": "./dist/crypto.d.ts",
+      "import": "./dist/crypto.js",
+      "require": "./dist/crypto.cjs"
+    },
+    "./testvectors": {
+      "types": "./dist/testvectors.d.ts",
+      "import": "./dist/testvectors.js",
+      "require": "./dist/testvectors.cjs"
+    },
+    "./testvectors/v1.json": "./dist/v1.json"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run typecheck && npm run test && npm run build"
+  },
+  "dependencies": {
+    "@noble/ciphers": "^1.2.1",
+    "@noble/curves": "^1.8.1",
+    "@noble/hashes": "^1.7.1",
+    "@scure/bip39": "^1.5.1"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/weswhite/vault-core.git"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}
