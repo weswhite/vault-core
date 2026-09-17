@@ -1,0 +1,299 @@
+{
+  "version": 1,
+  "generatedAt": "1970-01-01T00:00:00.000Z",
+  "geohash": [
+    {
+      "lat": 42.6,
+      "lon": -5.6,
+      "precision": 5,
+      "cell": "ezs42"
+    },
+    {
+      "lat": 45.6789,
+      "lon": -111.0429,
+      "precision": 4,
+      "cell": "c815"
+    },
+    {
+      "lat": 0,
+      "lon": 0,
+      "precision": 4,
+      "cell": "s000"
+    },
+    {
+      "lat": 90,
+      "lon": 180,
+      "precision": 4,
+      "cell": "zzzz"
+    },
+    {
+      "lat": -90,
+      "lon": -180,
+      "precision": 4,
+      "cell": "0000"
+    }
+  ],
+  "species": [
+    {
+      "input": "Brown Trout",
+      "output": "brown trout"
+    },
+    {
+      "input": "  brown   trout  ",
+      "output": "brown trout"
+    },
+    {
+      "input": "BROWN TROUT",
+      "output": "brown trout"
+    },
+    {
+      "input": "sjöring",
+      "output": "sjöring"
+    },
+    {
+      "input": "rainbow-trout",
+      "output": "rainbow-trout"
+    },
+    {
+      "input": "",
+      "output": "__unknown__"
+    },
+    {
+      "input": "   ",
+      "output": "__unknown__"
+    }
+  ],
+  "cursor": [
+    {
+      "ts": 0,
+      "id": "a",
+      "encoded": "d2xjHzEfMB9h"
+    },
+    {
+      "ts": 1757980800000,
+      "id": "cku1a2b3c4d5e6f7g8h9i0j1",
+      "encoded": "d2xjHzEfMTc1Nzk4MDgwMDAwMB9ja3UxYTJiM2M0ZDVlNmY3ZzhoOWkwajE"
+    }
+  ],
+  "pad": [
+    {
+      "plaintextHex": "",
+      "padBucket": 0,
+      "paddedHex": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "plaintextHex": "7b7d",
+      "padBucket": 0,
+      "paddedHex": "00027b7d000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "plaintextHex": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "padBucket": 0,
+      "paddedHex": "003d0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "plaintextHex": "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "padBucket": 0,
+      "paddedHex": "003e0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "plaintextHex": "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "padBucket": 2,
+      "paddedHex": "00c80000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ],
+  "payload": [
+    {
+      "payload": {
+        "lat": 45.6789,
+        "lng": -111.0429,
+        "sp": "Brown trout"
+      },
+      "jsonBytesHex": "7b226c6174223a34352e363738392c226c6e67223a2d3131312e303432392c227370223a2242726f776e2074726f7574227d"
+    },
+    {
+      "payload": {
+        "lat": 45.6789,
+        "lng": -111.0429
+      },
+      "jsonBytesHex": "7b226c6174223a34352e363738392c226c6e67223a2d3131312e303432397d"
+    },
+    {
+      "payload": {
+        "sp": "Cutthroat"
+      },
+      "jsonBytesHex": "7b227370223a224375747468726f6174227d"
+    },
+    {
+      "payload": {
+        "nm": "Cedar Hole",
+        "ds": "Below the bridge",
+        "nt": "150 yards below the gravel bar"
+      },
+      "jsonBytesHex": "7b226e6d223a22436564617220486f6c65222c226473223a2242656c6f772074686520627269646765222c226e74223a223135302079617264732062656c6f77207468652067726176656c20626172227d"
+    },
+    {
+      "payload": {
+        "sp": "sjöring",
+        "nt": "ångström — café 🐟"
+      },
+      "jsonBytesHex": "7b227370223a22736ac3b672696e67222c226e74223a22c3a56e67737472c3b66d20e2809420636166c3a920f09f909f227d"
+    }
+  ],
+  "aad": [
+    {
+      "headerHex": "574c563101010100",
+      "userId": "cku1a2b3c4d5e6f7g8h9i0j1",
+      "table": "FishCatch",
+      "recordKey": "cat_1",
+      "fieldGroup": "all",
+      "encVersion": 1,
+      "aadHex": "574c563101010100776c76311f636b75316132623363346435653666376738683969306a311f4669736843617463681f6361745f311f616c6c1f31"
+    },
+    {
+      "headerHex": "574c563101010100",
+      "userId": "cku1a2b3c4d5e6f7g8h9i0j1",
+      "table": "Spot",
+      "recordKey": "cat_1",
+      "fieldGroup": "all",
+      "encVersion": 1,
+      "aadHex": "574c563101010100776c76311f636b75316132623363346435653666376738683969306a311f53706f741f6361745f311f616c6c1f31"
+    },
+    {
+      "headerHex": "574c563101010100",
+      "userId": "cku1a2b3c4d5e6f7g8h9i0j1",
+      "table": "FishCatch",
+      "recordKey": "cat_1",
+      "fieldGroup": "loc",
+      "encVersion": 1,
+      "aadHex": "574c563101010100776c76311f636b75316132623363346435653666376738683969306a311f4669736843617463681f6361745f311f6c6f631f31"
+    }
+  ],
+  "keypair": [
+    {
+      "dataKeyHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "publicKeyHex": "19aea5c93cda5debe3d5100f121a957907ca2481d46d9bf991650fa7f142a838",
+      "fingerprint": "zRVEYCZeRAg1_YwiIvEZB_T3fbpSpCNRphXgtEsBVok"
+    }
+  ],
+  "seal": [
+    {
+      "dataKeyHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "ephemeralSecretHex": "202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f",
+      "payload": {
+        "lat": 45.6789,
+        "lng": -111.0429,
+        "sp": "Brown trout"
+      },
+      "userId": "cku1a2b3c4d5e6f7g8h9i0j1",
+      "table": "FishCatch",
+      "recordKey": "cat_1",
+      "fieldGroup": "all",
+      "encVersion": 1,
+      "blob": "V0xWMQEBAQA1gHLWNliA0a7qMprfkSE4OFHtIaKOO3XpZdDSzRZiVGGi_WN-D6aopCMFOakiecWqP5bGFweJr24ffRRJKalkFEpPz0UAwGKL0PbkY5bCeOH7EPpcRyKFirzPe1mBcFZ_pD1a5f3AKg8_q7prdGU9"
+    },
+    {
+      "dataKeyHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "ephemeralSecretHex": "202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f",
+      "payload": {
+        "nm": "Cedar Hole",
+        "ds": "Below the bridge",
+        "nt": "150 yards below the gravel bar"
+      },
+      "userId": "cku1a2b3c4d5e6f7g8h9i0j1",
+      "table": "Spot",
+      "recordKey": "spot_1",
+      "fieldGroup": "all",
+      "encVersion": 1,
+      "blob": "V0xWMQEBAQE1gHLWNliA0a7qMprfkSE4OFHtIaKOO3XpZdDSzRZiVGHB_WN8A_CwvFRVc_5nYbTpcZ-KXAfX8X0UbngccfQqGBxU2kdYkEmd2OSob8DeY7a1ELZpdwL8686rCHnjFTqGFEMwG1Pl3Ok7LVod3GJsT7s3ZLzlRHgmp8nb4g49slXFFfnvb_7vtTzFUaC8cKmf2JJmYs_qQUYVKvUnZlkLECKmJLICffZlSROck8rf0Q"
+    },
+    {
+      "dataKeyHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "ephemeralSecretHex": "202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f",
+      "payload": {
+        "sp": "sjöring",
+        "nt": "ångström — café 🐟"
+      },
+      "userId": "cku1a2b3c4d5e6f7g8h9i0j1",
+      "table": "FishCatch",
+      "recordKey": "cat_2",
+      "fieldGroup": "sp",
+      "encVersion": 1,
+      "blob": "V0xWMQEBAQA1gHLWNliA0a7qMprfkSE4OFHtIaKOO3XpZdDSzRZiVGGi_WNhHvCwvGRa1ClnKJLhP9aKHlGRuH3t6VQebu8v-95Rn4W6dgCa3udJ6sJAiAQQEPpcRyKFirzPe1mBcFZxGs_4O_aL4qRPyP4rqWpB"
+    }
+  ],
+  "wrap": [
+    {
+      "dataKeyHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "secretUtf8": "123456",
+      "saltHex": "404142434445464748494a4b4c4d4e4f",
+      "nonceHex": "505152535455565758595a5b5c5d5e5f6061626364656667",
+      "memKiB": 8192,
+      "timeCost": 1,
+      "lanes": 1,
+      "userId": "cku1a2b3c4d5e6f7g8h9i0j1",
+      "wrapType": 1,
+      "keyVersion": 1,
+      "vaultPubKeyFp": "zRVEYCZeRAg1_YwiIvEZB_T3fbpSpCNRphXgtEsBVok",
+      "slow": false,
+      "blob": "V0xXMQEBAQAAACAAAQEAAEBBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYGFiY2RlZmfmbX0deGw13PnyW8ubWiX7nIn4_JIFgDPHaCdjJkxKYkLJnOvBnqfC5cLp2Yre7tU"
+    },
+    {
+      "dataKeyHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "secretUtf8": "a longer passphrase for web",
+      "saltHex": "404142434445464748494a4b4c4d4e4f",
+      "nonceHex": "505152535455565758595a5b5c5d5e5f6061626364656667",
+      "memKiB": 8192,
+      "timeCost": 1,
+      "lanes": 1,
+      "userId": "cku1a2b3c4d5e6f7g8h9i0j1",
+      "wrapType": 1,
+      "keyVersion": 1,
+      "vaultPubKeyFp": "zRVEYCZeRAg1_YwiIvEZB_T3fbpSpCNRphXgtEsBVok",
+      "slow": false,
+      "blob": "V0xXMQEBAQAAACAAAQEAAEBBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYGFiY2RlZmcVBfvKEO5-bJC8g6Or9jwzavhRi-wwKPCmCOd7WHd2W8R9Qxw4idnKQb_O-bVa8Lc"
+    },
+    {
+      "dataKeyHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "secretUtf8": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art",
+      "saltHex": "404142434445464748494a4b4c4d4e4f",
+      "nonceHex": "505152535455565758595a5b5c5d5e5f6061626364656667",
+      "memKiB": 8192,
+      "timeCost": 1,
+      "lanes": 1,
+      "userId": "cku1a2b3c4d5e6f7g8h9i0j1",
+      "wrapType": 2,
+      "keyVersion": 1,
+      "vaultPubKeyFp": "zRVEYCZeRAg1_YwiIvEZB_T3fbpSpCNRphXgtEsBVok",
+      "slow": false,
+      "blob": "V0xXMQEBAgAAACAAAQEAAEBBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYGFiY2RlZme2ZaG5leYxKEINpgpSl6_5-73rZE57EoBe2uLe7oUmi7l6LqPcbBEWjbELK5Gcmzk"
+    },
+    {
+      "dataKeyHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "secretUtf8": "123456",
+      "saltHex": "404142434445464748494a4b4c4d4e4f",
+      "nonceHex": "505152535455565758595a5b5c5d5e5f6061626364656667",
+      "memKiB": 65536,
+      "timeCost": 3,
+      "lanes": 1,
+      "userId": "cku1a2b3c4d5e6f7g8h9i0j1",
+      "wrapType": 1,
+      "keyVersion": 1,
+      "vaultPubKeyFp": "zRVEYCZeRAg1_YwiIvEZB_T3fbpSpCNRphXgtEsBVok",
+      "slow": true,
+      "blob": "V0xXMQEBAQAAAQAAAwEAAEBBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYGFiY2RlZmeA5RgLYho_oYBm8NNawJqGFzQS6_Ex7cYID4hOg5wMQHSbN06hs0csDvxhKqxtaXw"
+    }
+  ],
+  "recovery": [
+    {
+      "raw": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art",
+      "normalized": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art",
+      "entropyHex": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "raw": "  ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ART  ",
+      "normalized": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art",
+      "entropyHex": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ]
+}

@@ -52,6 +52,48 @@ export class RecoveryCodeError extends Error {
 }
 
 /**
+ * Unicode whitespace, by code point. Covers the separators that turn up when a
+ * code is pasted out of a password manager or a notes app: NBSP, the en-quad
+ * family, line and paragraph separators, and the ideographic space.
+ */
+function isUnicodeSpace(code: number): boolean {
+  return (
+    code === 0x09 ||
+    code === 0x0a ||
+    code === 0x0b ||
+    code === 0x0c ||
+    code === 0x0d ||
+    code === 0x20 ||
+    code === 0x85 ||
+    code === 0xa0 ||
+    code === 0x1680 ||
+    (code >= 0x2000 && code <= 0x200a) ||
+    code === 0x2028 ||
+    code === 0x2029 ||
+    code === 0x202f ||
+    code === 0x205f ||
+    code === 0x3000
+  );
+}
+
+function collapseWhitespace(value: string): string {
+  let out = '';
+  let pendingSpace = false;
+  for (let i = 0; i < value.length; i++) {
+    if (isUnicodeSpace(value.charCodeAt(i))) {
+      pendingSpace = out.length > 0;
+      continue;
+    }
+    if (pendingSpace) {
+      out += ' ';
+      pendingSpace = false;
+    }
+    out += value[i];
+  }
+  return out;
+}
+
+/**
  * Lowercase, NFKD, collapse all whitespace to single spaces, trim.
  *
  * Users paste these out of password managers and notes apps, which introduce
@@ -62,14 +104,13 @@ export class RecoveryCodeError extends Error {
 export function normalizeRecoveryCode(raw: string): string {
   let out = raw.normalize('NFKD').toLowerCase();
 
-  // Replace every Unicode whitespace character with a plain space. Written as an
-  // explicit class rather than \s because Hermes and V8 have differed on which
-  // exotic separators \s matches.
-  out = out.replace(
-    /[
-    -     　]+/g,
-    ' ',
-  );
+  // Collapse every Unicode whitespace character to a single space.
+  //
+  // Written as a code-point check rather than a regex for two reasons: \s has
+  // differed between Hermes and V8 on exotic separators, and a regex literal
+  // holding these escapes is one bad codemod away from containing a real
+  // newline and silently becoming a different pattern.
+  out = collapseWhitespace(out);
 
   return out.trim();
 }

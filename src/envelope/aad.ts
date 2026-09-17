@@ -9,6 +9,7 @@
  */
 
 import { VaultFormatError } from './format.js';
+import { encodeUtf8 } from './utf8.js';
 
 /** ASCII Unit Separator. Not legal in any component value. */
 const SEP = 0x1f;
@@ -70,8 +71,6 @@ export interface WrapAadInput {
   vaultPubKeyFp: string;
 }
 
-const encoder = new TextEncoder();
-
 function assertNoSeparator(label: string, value: string): void {
   if (value.length === 0) {
     throw new VaultFormatError(`${label} must not be empty`, 'VAULT_BAD_AAD');
@@ -97,10 +96,10 @@ function concat(parts: Uint8Array[]): Uint8Array {
 }
 
 function joinWithSeparator(prefix: string, fields: string[]): Uint8Array {
-  const parts: Uint8Array[] = [encoder.encode(prefix)];
+  const parts: Uint8Array[] = [encodeUtf8(prefix)];
   for (let i = 0; i < fields.length; i++) {
     parts.push(new Uint8Array([SEP]));
-    parts.push(encoder.encode(fields[i]));
+    parts.push(encodeUtf8(fields[i]));
   }
   return concat(parts);
 }

@@ -12,6 +12,7 @@
  */
 
 import { VaultFormatError } from './format.js';
+import { encodeUtf8, decodeUtf8 } from './utf8.js';
 
 /**
  * Wire keys. These are frozen: renaming one is a new envelope version, because
@@ -46,9 +47,6 @@ export interface VaultPayload {
   cln?: string;
 }
 
-const encoder = new TextEncoder();
-const decoder = new TextDecoder('utf-8', { fatal: true });
-
 /**
  * Absent fields are omitted rather than written as null, because a record only
  * carries the field groups the user chose to encrypt. An explicit null would be
@@ -73,13 +71,13 @@ export function encodePayload(payload: VaultPayload): Uint8Array {
     parts.push(JSON.stringify(key) + ':' + JSON.stringify(value));
   }
 
-  return encoder.encode('{' + parts.join(',') + '}');
+  return encodeUtf8('{' + parts.join(',') + '}');
 }
 
 export function decodePayload(bytes: Uint8Array): VaultPayload {
   let text: string;
   try {
-    text = decoder.decode(bytes);
+    text = decodeUtf8(bytes);
   } catch {
     // Reached only if the tag verified and the bytes still are not UTF-8, which
     // means an encoder on some platform is producing garbage. Worth a distinct

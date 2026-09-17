@@ -239,7 +239,10 @@ export function base64UrlEncode(bytes: Uint8Array): string {
 }
 
 export function isBase64Url(value: string): boolean {
-  if (value.length === 0) return false;
+  // The empty string is valid base64url for zero bytes, so the codec round-trips
+  // cleanly. Callers that need a non-empty value check length themselves;
+  // validateRecordShape already rejects short input via MIN_RECORD_SIZE.
+  if (value.length === 0) return true;
   // A 4k-group remainder of 1 char cannot encode any whole byte.
   if (value.length % 4 === 1) return false;
   for (let i = 0; i < value.length; i++) {

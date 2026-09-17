@@ -10,6 +10,7 @@
   },
   "files": [
     "dist",
+    "testvectors",
     "FORMAT.md"
   ],
   "main": "./dist/index.cjs",
@@ -31,7 +32,7 @@
       "import": "./dist/testvectors.js",
       "require": "./dist/testvectors.cjs"
     },
-    "./testvectors/v1.json": "./dist/v1.json"
+    "./testvectors/v1.json": "./testvectors/v1.json"
   },
   "scripts": {
     "build": "tsup",
@@ -48,6 +49,7 @@
   },
   "devDependencies": {
     "tsup": "^8.3.5",
+    "tsx": "^4.23.13",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
   },

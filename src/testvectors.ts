@@ -35,6 +35,8 @@ import {
   PAD_BUCKET_NONE,
 } from './index.js';
 
+import { encodeUtf8 } from './envelope/utf8.js';
+
 import {
   sealRecord,
   openRecord,
@@ -268,7 +270,7 @@ export function runVectorSuite(
         keyVersion: v.keyVersion,
         vaultPubKeyFp: v.vaultPubKeyFp,
       };
-      const secret = new TextEncoder().encode(v.secretUtf8);
+      const secret = encodeUtf8(v.secretUtf8);
       const blob = wrapDataKey({
         dataKey: hexToBytes(v.dataKeyHex),
         secret,

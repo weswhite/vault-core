@@ -40,12 +40,13 @@ import {
 } from '../src/crypto.js';
 
 import { bytesToHex, hexToBytes, type VectorFile } from '../src/testvectors.js';
+import { encodeUtf8 } from '../src/envelope/utf8.js';
 
 // Fixed inputs. Chosen once, frozen forever.
 const DATA_KEY_HEX = '000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f';
 const EPHEMERAL_HEX = '202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f';
 const SALT_HEX = '404142434445464748494a4b4c4d4e4f';
-const NONCE_HEX = '505152535455565758595a5b5c5d5e5f606162636465666768696a6b';
+const NONCE_HEX = '505152535455565758595a5b5c5d5e5f6061626364656667';
 const USER_ID = 'cku1a2b3c4d5e6f7g8h9i0j1';
 
 // A known-good 24-word BIP-39 mnemonic. All-zero entropy, so it is verifiable
@@ -104,7 +105,7 @@ function wrapVector(
     slow,
     blob: wrapDataKey({
       dataKey: hexToBytes(DATA_KEY_HEX),
-      secret: new TextEncoder().encode(secretUtf8),
+      secret: encodeUtf8(secretUtf8),
       binding,
       params,
       salt: hexToBytes(SALT_HEX),
@@ -118,8 +119,22 @@ const payloads: Record<string, unknown>[] = [
   { lat: 45.6789, lng: -111.0429 },
   { sp: 'Cutthroat' },
   { nm: 'Cedar Hole', ds: 'Below the bridge', nt: '150 yards below the gravel bar' },
-  // Non-ASCII, to catch a platform whose UTF-8 encoder disagrees.
-  { sp: 'Ã¶ring', nt: 'Ã¥ngstrÃ¶m â€” dash and Ã©mojis ðŸŸ' },
+  // Non-ASCII, to catch a platform whose UTF-8 encoder disagrees. Written as
+  // code points so the source stays ASCII and cannot be mangled by an editor
+  // or a codemod: o-umlaut, a-ring, an em dash, e-acute, and a 4-byte emoji.
+  {
+    sp: 'sj' + String.fromCharCode(0x00f6) + 'ring',
+    nt:
+      String.fromCharCode(0x00e5) +
+      'ngstr' +
+      String.fromCharCode(0x00f6) +
+      'm ' +
+      String.fromCharCode(0x2014) +
+      ' caf' +
+      String.fromCharCode(0x00e9) +
+      ' ' +
+      String.fromCharCode(0xd83d, 0xdc1f),
+  },
 ];
 
 const headerForAad = hexToBytes('574c5631' + '01' + '01' + '01' + '00');
@@ -140,7 +155,7 @@ const vectors: VectorFile = {
     'Brown Trout',
     '  brown   trout  ',
     'BROWN TROUT',
-    'Ã¶ring',
+    'sj' + String.fromCharCode(0x00f6) + 'ring',
     'rainbow-trout',
     '',
     '   ',
