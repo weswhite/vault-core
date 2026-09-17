@@ -1,0 +1,28 @@
+name: release
+
+on:
+  release:
+    types: [published]
+
+# Publishing from CI with OIDC means no long-lived npm token exists anywhere.
+# For a package that ships crypto to three apps, a leaked token is the most
+# realistic supply-chain risk, so this is worth the extra setup.
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://registry.npmjs.org
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npm publish --provenance --access public
