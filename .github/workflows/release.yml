@@ -21,6 +21,14 @@ jobs:
           node-version: 22
           cache: npm
           registry-url: https://registry.npmjs.org
+
+      # OIDC trusted publishing needs npm >= 11.5.1. The runner ships 10.9.x,
+      # which signs the provenance statement and then 404s on the PUT because it
+      # never sends an OIDC token -- a confusing failure that looks like a
+      # missing package rather than a missing auth mechanism.
+      - run: npm install -g npm@latest
+      - run: npm --version
+
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
