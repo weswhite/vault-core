@@ -1,6 +1,6 @@
 {
   "name": "@waterlands/vault-core",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Wire format and crypto for the Waterlands vault: client-side encryption of catch locations, species and notes.",
   "license": "MIT",
   "type": "module",
@@ -26,6 +26,11 @@
       "types": "./dist/crypto.d.ts",
       "import": "./dist/crypto.js",
       "require": "./dist/crypto.cjs"
+    },
+    "./read": {
+      "types": "./dist/read.d.ts",
+      "import": "./dist/read.js",
+      "require": "./dist/read.cjs"
     },
     "./testvectors": {
       "types": "./dist/testvectors.d.ts",

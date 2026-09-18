@@ -38,7 +38,7 @@ export const WRAP_TYPE_RECOVERY = 2;
  * warn on drift. A canary, not a gate: a mismatch is logged, never enforced,
  * because a hard check would brick clients mid-rollout.
  */
-export const VAULT_CORE_VERSION = '0.1.1';
+export const VAULT_CORE_VERSION = '0.2.0';
 
 /**
  * Bumped when normalizeSpecies() changes its output for any input. Stored

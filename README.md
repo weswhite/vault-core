@@ -51,13 +51,39 @@ import { encodeCell, validateRecordShape, PLACEHOLDER_SPECIES } from '@waterland
 // Client only.
 import { sealRecord, openRecord } from '@waterlands/vault-core/crypto';
 
+// What a row MEANS when you cannot open it. Pure, and safe on a server.
+import { encSpecies, exactCoords, tallySpecies } from '@waterlands/vault-core/read';
+
 // Cross-platform conformance suite.
 import { runVectorSuite } from '@waterlands/vault-core/testvectors';
 ```
 
 The split matters. The backend and server-side rendering legitimately need the
 geohash and cursor helpers. If those only existed at the package root, one
-`.server.ts` import would pull a WASM crypto module into a server bundle.
+`.server.ts` import would pull a crypto module into a server bundle.
+
+### Why `/read` is here and not in each app
+
+A sealed row's plaintext columns hold placeholders, and deciding what they mean
+is knowledge about the format, not about any one app's UI. Two clients working
+it out separately is how one of them ends up drawing a map pin on a catch whose
+position is supposed to be hidden: the coordinates on a sealed row are real
+numbers in a real place, about 20km from the truth, and nothing in a
+`{lat, lng}` says so.
+
+So `/read` owns the rules. `locPrecision === 'CELL'` means "has a location and
+it is hidden", its absence means "has no location", event-level tables keep null
+coordinates even with a cell, and a sealed row's species column must never be
+read as a species. `exactCoords()` returns null unless a position is genuinely
+exact, which forces every pin and distance calculation to handle the case.
+
+What is NOT here: wording. "Locked", "Could not decrypt" and every other string
+a user reads stays in each app, so a copy change never needs a release of this
+package.
+
+Unlike the envelope, `/read` is ordinary software and versions like it. A change
+there does not imply an envelope version; the format it describes is still
+WLV1.
 
 ## Usage
 
