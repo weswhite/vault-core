@@ -83,9 +83,21 @@ describe('encField', () => {
     expect(encField({ encVersion: 1 }, 'x', { failed: true }).state).toBe('failed');
   });
 
-  it('stays locked when the payload carries no value for this field', () => {
-    // Not every sealed record carries every field. Absent is unknown, not empty.
-    expect(encField({ encVersion: 1 }, 'x', { value: undefined }).state).toBe('locked');
+  it('reads an absent field in an opened record as empty, not locked', () => {
+    // The payload omits null fields, and every record is sealed whole. So once a
+    // record has opened, a missing field was empty -- and showing it as locked
+    // would tell the owner, after unlocking, that their own note is hidden.
+    const field = encField({ encVersion: 1 }, 'x', { value: undefined }, null as unknown as string);
+    expect(field.state).toBe('open');
+    expect(field.value).toBeNull();
+  });
+
+  it('uses the placeholder as the empty value when none is given', () => {
+    expect(encField({ encVersion: 1 }, 'x', { value: undefined })).toEqual({ state: 'open', value: 'x' });
+  });
+
+  it('stays locked when the record has not been opened at all', () => {
+    expect(encField({ encVersion: 1 }, 'x', undefined).state).toBe('locked');
   });
 
   it('keeps the placeholder on a record that would not open', () => {
@@ -147,6 +159,22 @@ describe('placeholders before unlock', () => {
   it('uses the server constants, so an unconverted screen still reads sensibly', () => {
     expect(encSpecies({ ...sealed, species: PLACEHOLDER_SPECIES }).value).toBe(PLACEHOLDER_SPECIES);
     expect(encName({ ...sealed, name: PLACEHOLDER_SPOT_NAME }).value).toBe(PLACEHOLDER_SPOT_NAME);
+  });
+
+  it('reads a note that was empty at sealing as empty once opened, never as locked', () => {
+    // The bug this release fixes. A session with no notes, sealed and then
+    // unlocked, showed "Note locked" to its owner.
+    const openedNoNotes = { payload: { lat: LAT, lng: LNG } };
+    expect(encNotes(sealed, openedNoNotes)).toEqual({ state: 'open', value: null });
+    expect(encDescription(sealed, openedNoNotes)).toEqual({ state: 'open', value: null });
+    expect(encCustomLocationName(sealed, openedNoNotes)).toEqual({ state: 'open', value: null });
+  });
+
+  it('reads a species that was empty at sealing as empty, not as the placeholder', () => {
+    expect(encSpecies({ ...sealed, species: PLACEHOLDER_SPECIES }, { payload: {} })).toEqual({
+      state: 'open',
+      value: '',
+    });
   });
 
   it('leaves nullable free text as null', () => {
@@ -266,10 +294,20 @@ describe('tallySpecies', () => {
   });
 
   it('never falls back to the species column for a sealed row', () => {
+    // Opened with no species: the catch was logged without one. It is named
+    // "Unknown", exactly as a plaintext catch with no species is -- and never
+    // "Encrypted", which is what the column holds.
     const opened = new Map([['a', { payload: {} }]]);
     const tally = tallySpecies([sealedCatch('a', 7)], countOf, opened);
-    expect(tally.entries).toEqual([]);
+    expect(tally.entries).toEqual([['Unknown', 7]]);
+    expect(tally.lockedCount).toBe(0);
+    expect(JSON.stringify(tally)).not.toContain(PLACEHOLDER_SPECIES);
+  });
+
+  it('still counts a sealed row as locked when it has not been opened', () => {
+    const tally = tallySpecies([sealedCatch('a', 7)], countOf, new Map());
     expect(tally.lockedCount).toBe(7);
+    expect(tally.entries).toEqual([]);
   });
 
   it('counts the bag, not the shots taken at it', () => {

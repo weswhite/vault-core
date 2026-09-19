@@ -35,7 +35,10 @@ export interface SpeciesRow extends SealedColumns {
  * same words rather than to nonsense.
  */
 export function encSpecies(row: SpeciesRow, opened?: OpenedRecord): Enc<string> {
-  return encField(row, row.species ?? PLACEHOLDER_SPECIES, pick(opened, opened?.payload?.sp));
+  // Empty string, not the placeholder, for a catch logged with no species: once
+  // opened, the owner should see the same "no species" they saw before sealing,
+  // not the word "Encrypted".
+  return encField(row, row.species ?? PLACEHOLDER_SPECIES, pick(opened, opened?.payload?.sp), '');
 }
 
 export interface NamedRow extends SealedColumns {
@@ -43,7 +46,7 @@ export interface NamedRow extends SealedColumns {
 }
 
 export function encName(row: NamedRow, opened?: OpenedRecord): Enc<string> {
-  return encField(row, row.name ?? PLACEHOLDER_SPOT_NAME, pick(opened, opened?.payload?.nm));
+  return encField(row, row.name ?? PLACEHOLDER_SPOT_NAME, pick(opened, opened?.payload?.nm), '');
 }
 
 export interface TextRow extends SealedColumns {
@@ -59,15 +62,15 @@ export interface TextRow extends SealedColumns {
  * locked.
  */
 export function encDescription(row: TextRow, opened?: OpenedRecord): Enc<string | null> {
-  return encField(row, row.description ?? null, pick(opened, opened?.payload?.ds));
+  return encField(row, row.description ?? null, pick(opened, opened?.payload?.ds), null);
 }
 
 export function encNotes(row: TextRow, opened?: OpenedRecord): Enc<string | null> {
-  return encField(row, row.notes ?? null, pick(opened, opened?.payload?.nt));
+  return encField(row, row.notes ?? null, pick(opened, opened?.payload?.nt), null);
 }
 
 export function encCustomLocationName(row: TextRow, opened?: OpenedRecord): Enc<string | null> {
-  return encField(row, row.customLocationName ?? null, pick(opened, opened?.payload?.cln));
+  return encField(row, row.customLocationName ?? null, pick(opened, opened?.payload?.cln), null);
 }
 
 export function encCoords(row: RowLocation, opened?: OpenedRecord): EncLocation {

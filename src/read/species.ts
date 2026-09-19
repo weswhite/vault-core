@@ -68,9 +68,11 @@ export function tallySpecies<T extends SpeciesRowInput>(
       continue;
     }
 
-    const species = record?.payload?.sp;
-    if (species) {
-      byName.set(species, (byName.get(species) ?? 0) + count);
+    if (record) {
+      // Opened. An absent species means the catch was logged without one, and
+      // it is named exactly as the plaintext branch above names that case.
+      const name = record.payload?.sp || 'Unknown';
+      byName.set(name, (byName.get(name) ?? 0) + count);
       continue;
     }
 
