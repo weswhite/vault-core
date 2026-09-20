@@ -7,6 +7,7 @@ export default defineConfig({
     index: 'src/index.ts',
     crypto: 'src/crypto.ts',
     read: 'src/read.ts',
+    migration: 'src/migration.ts',
     testvectors: 'src/testvectors.ts',
   },
   format: ['esm', 'cjs'],
