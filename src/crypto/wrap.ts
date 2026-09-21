@@ -32,6 +32,7 @@ import {
   WRAP_VERSION,
   SUPPORTED_WRAP_VERSIONS,
   KDF_ARGON2ID,
+  WRAP_TYPE_PIN,
 } from '../version.js';
 
 /** "WLW1" */
@@ -132,9 +133,25 @@ export function parseWrapHeader(bytes: Uint8Array): WrapHeader {
   const timeCost = bytes[12];
   const lanes = bytes[13];
 
-  // A hostile or corrupt blob could otherwise ask a phone to allocate gigabytes
-  // and hang, or ask for a cost of zero and produce a trivially guessable key.
-  if (memKiB < 1024 || memKiB > 1048576) {
+  const wrapType = bytes[6];
+
+  /*
+   * A hostile or corrupt blob could otherwise ask a phone to allocate gigabytes
+   * and hang, or name a cost so small that a guessable secret becomes cheap to
+   * attack. The floor therefore depends on what the wrap protects, because that
+   * is what the cost is for:
+   *
+   *   PIN       ~20 bits, guessable. Cost is the only thing standing in the
+   *             way, so a cheap PIN wrap is refused outright.
+   *   RECOVERY  24 words, 256 bits. Guessing is impossible at any cost, and the
+   *             floor only has to catch nonsense.
+   *
+   * A single floor could not say that, and the one that was here (1 MiB for
+   * everything) took five minutes on a mid-range Android for the wrap that
+   * needed it least. See ARGON2_RECOVERY for those measurements.
+   */
+  const floorKiB = wrapType === WRAP_TYPE_PIN ? 8192 : 64;
+  if (memKiB < floorKiB || memKiB > 1048576) {
     throw new VaultFormatError(`implausible Argon2 memory ${memKiB} KiB`, 'VAULT_BAD_WRAP');
   }
   if (timeCost < 1 || lanes < 1) {
@@ -144,7 +161,7 @@ export function parseWrapHeader(bytes: Uint8Array): WrapHeader {
   return {
     version,
     kdf,
-    wrapType: bytes[6],
+    wrapType,
     params: { memKiB, timeCost, lanes },
     salt: bytes.subarray(16, 16 + SALT_SIZE),
     nonce: bytes.subarray(32, 32 + NONCE_SIZE),
