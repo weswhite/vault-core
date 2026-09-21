@@ -25,20 +25,40 @@ export const RECOVERY_WORD_COUNT = 24;
 const ENTROPY_BITS = 256;
 
 /**
- * Recovery wraps can use cheap Argon2 parameters, and should.
+ * Recovery wraps use cheap Argon2 parameters, and must.
  *
  * Argon2 cost exists to make guessing expensive. A 6-digit PIN has roughly 20
  * bits of entropy and needs every bit of slowdown available. A 24-word code has
- * 256 bits, so brute force is off the table regardless of cost, and paying a
- * second of key derivation on a device someone is already struggling with is
- * pure friction.
+ * 256 bits: at a trillion guesses a second with no key derivation cost at all,
+ * exhausting it takes about 10^57 years. Cost added on top of that defends
+ * against nothing, and it is charged to someone who has just lost their phone
+ * and is typing 24 words into a new one.
  *
- * Because parameters travel inside the wrap blob, the two wraps for the same
- * user can legitimately differ.
+ * These numbers are not a guess. Measured in pure JS on Hermes, on a Galaxy A17
+ * (2026-09-20), deriving one key:
+ *
+ *   16 MiB, t=2  320 s     <- what this used to be
+ *    1 MiB, t=1   10.3 s
+ *  256 KiB, t=1    2.7 s
+ *   64 KiB, t=1    0.8 s   <- what it is now
+ *
+ * Five minutes is not a slow unlock, it is a broken one, and it applied to
+ * enrollment on a phone as well as recovery. The web pays the same cost in
+ * about a second because V8 has a JIT and Hermes does not, which is exactly why
+ * the weakest platform sets this number.
+ *
+ * A PIN wrap is the opposite case and keeps ARGON2_INTERACTIVE: twenty bits of
+ * entropy is guessable, so every bit of slowdown counts. Because parameters
+ * travel inside the wrap blob, the two wraps for the same user legitimately
+ * differ, and wraps made before this change keep opening with their own.
+ *
+ * This holds only while the recovery code is machine-generated. A code the user
+ * invents is not 256 bits, and cost would have to come back with it -- which on
+ * a phone means a native Argon2 binding, not a bigger number here.
  */
 export const ARGON2_RECOVERY: Argon2Params = {
-  memKiB: 16384,
-  timeCost: 2,
+  memKiB: 64,
+  timeCost: 1,
   lanes: 1,
 };
 
