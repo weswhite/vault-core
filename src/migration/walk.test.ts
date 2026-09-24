@@ -230,22 +230,34 @@ describe('interruption', () => {
   });
 });
 
-describe('an unknown table', () => {
-  it('refuses rather than guess at its fields', async () => {
-    // Guessing wrong would delete whichever fields it missed.
-    const { transport } = makeServer([]);
-    transport.next = vi.fn(async () => ({
-      // A name the package has never heard of. It used to be 'Read', until Read
-      // became a real migration table.
-      table: 'Debrief' as MigrationTable,
-      rows: [row('x')],
-      nextCursor: '0',
-      done: false,
-    }));
+describe('a table this client has never heard of', () => {
+  it('skips it and keeps walking, rather than stranding the whole history', async () => {
+    // Guessing its fields would delete whichever ones we missed. Failing the
+    // run would strand every older app on the store the day a table is added.
+    // 'Debrief' stands in for that; it used to be 'Read', until Read became a
+    // real migration table.
+    const { transport, applied } = makeServer([]);
+    let served = 0;
+    transport.next = vi.fn(async () => {
+      served += 1;
+      if (served > 1) return { table: 'Spot' as MigrationTable, rows: [], nextCursor: null, done: true };
+      return { table: 'Debrief' as MigrationTable, rows: [row('x')], nextCursor: '0', done: false };
+    });
+    const seal = vi.fn();
 
-    await expect(
-      runMigration({ transport, seal: vi.fn(), deviceId: 'd', envelopeVersion: 1 }),
-    ).rejects.toThrow(/Unknown migration table/);
+    const result = await runMigration({
+      transport,
+      seal,
+      deviceId: 'd',
+      envelopeVersion: 1,
+    });
+
+    expect(seal).not.toHaveBeenCalled();
+    expect(applied).toHaveLength(0);
+    expect(result.failed).toBe(1);
+    // The cursor moved past it, so the walk reached the end rather than
+    // serving that page forever.
+    expect(transport.next).toHaveBeenCalledTimes(2);
   });
 });
 
