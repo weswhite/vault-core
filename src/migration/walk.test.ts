@@ -10,7 +10,7 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { runMigration, MigrationCancelled, type MigrationTransport, type ApplyItem } from './walk';
-import type { MigrationRow, MigrationTable } from './payload';
+import { REQUIRES_CELL, preparePayload, type MigrationRow, type MigrationTable } from './payload';
 
 type Row = MigrationRow & { table: MigrationTable; sealed: boolean; poison?: boolean };
 
@@ -235,7 +235,9 @@ describe('an unknown table', () => {
     // Guessing wrong would delete whichever fields it missed.
     const { transport } = makeServer([]);
     transport.next = vi.fn(async () => ({
-      table: 'Read' as MigrationTable,
+      // A name the package has never heard of. It used to be 'Read', until Read
+      // became a real migration table.
+      table: 'Debrief' as MigrationTable,
       rows: [row('x')],
       nextCursor: '0',
       done: false,
@@ -244,5 +246,46 @@ describe('an unknown table', () => {
     await expect(
       runMigration({ transport, seal: vi.fn(), deviceId: 'd', envelopeVersion: 1 }),
     ).rejects.toThrow(/Unknown migration table/);
+  });
+});
+
+describe('a Read', () => {
+  it('seals its point, note and title, and nothing else', () => {
+    // A Read is the one table whose columns are named differently, so the
+    // server renames them into the common row shape before they get here. This
+    // is the test that the renaming and this file agree; if they ever stop, a
+    // migrated Read loses its note permanently.
+    const prepared = preparePayload('Read', {
+      id: 'r1',
+      latitude: 45.678912,
+      longitude: -111.042934,
+      notes: 'practice water',
+      title: 'Tuesday scout',
+      createdAt: '2026-01-01T00:00:00.000Z',
+    });
+
+    expect(prepared.payload).toEqual({
+      lat: 45.678912,
+      lng: -111.042934,
+      nt: 'practice water',
+      tl: 'Tuesday scout',
+    });
+    expect(prepared.cellLat).toBe(45.678912);
+  });
+
+  it('seals with no position at all, because a Read may never have had one', () => {
+    // Read.pointLat is nullable, unlike Spot's. Such a row still has a note
+    // worth hiding, so it seals with an empty cell rather than being skipped.
+    const prepared = preparePayload('Read', {
+      id: 'r2',
+      latitude: null,
+      longitude: null,
+      notes: 'the far blind',
+      createdAt: '2026-01-01T00:00:00.000Z',
+    });
+
+    expect(prepared.payload).toEqual({ nt: 'the far blind' });
+    expect(prepared.cellLat).toBeNull();
+    expect(REQUIRES_CELL.has('Read')).toBe(false);
   });
 });
