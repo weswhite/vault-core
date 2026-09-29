@@ -124,9 +124,24 @@ export async function runMigration(opts: {
     if (page.done || page.rows.length === 0) break;
 
     if (!MIGRATION_TABLES.includes(page.table)) {
-      // A table this client does not know how to seal. Refusing is the only
-      // safe answer: guessing its fields would delete whichever ones we missed.
-      throw new Error(`Unknown migration table: ${page.table}`);
+      /*
+       * A table added to the server after this client shipped.
+       *
+       * Sealing it is out of the question -- guessing its fields would delete
+       * whichever ones we missed -- but so is failing the whole walk, which
+       * would strand every older app on the store the day a table is added.
+       * So it is skipped exactly like an unsealable row: nothing applied, the
+       * cursor moved past it, the rows counted as failed and left readable.
+       * The server's recount reports them, and whichever client does know the
+       * table finishes the job.
+       */
+      await transport.apply([], page.nextCursor, phase);
+      failedTotal += page.rows.length;
+      onProgress?.({ sealed: sealedTotal, failed: failedTotal, table: null });
+      cursor = page.nextCursor;
+      pages += 1;
+      if (pages % RENEW_EVERY === 0) await transport.claim(deviceId);
+      continue;
     }
 
     const prepared = page.rows.map((row) => preparePayload(page.table, row));

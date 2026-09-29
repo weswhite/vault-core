@@ -27,10 +27,15 @@ export const PAYLOAD_KEYS = {
   description: 'ds',
   notes: 'nt',
   customLocationName: 'cln',
+  title: 'tl',
 } as const;
 
 /** Serialisation order. Frozen. */
-const KEY_ORDER: readonly string[] = ['lat', 'lng', 'sp', 'nm', 'ds', 'nt', 'cln'];
+// Appended, never inserted. A record is serialised in this order and the test
+// vectors are bytes, so moving an existing key changes every one of them; a new
+// key on the end is a key old records simply do not carry, which decodePayload
+// already treats as absent.
+const KEY_ORDER: readonly string[] = ['lat', 'lng', 'sp', 'nm', 'ds', 'nt', 'cln', 'tl'];
 
 export interface VaultPayload {
   lat?: number;
@@ -45,6 +50,8 @@ export interface VaultPayload {
   nt?: string;
   /** customLocationName (FishingSession) */
   cln?: string;
+  /** title (Read) */
+  tl?: string;
 }
 
 /**

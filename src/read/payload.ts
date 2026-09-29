@@ -1,7 +1,7 @@
 /**
  * Row plus decrypted payload, out come `Enc` fields.
  *
- * The short wire keys (`sp`, `nm`, `ds`, `nt`, `cln`) are frozen by the envelope
+ * The short wire keys (`sp`, `nm`, `ds`, `nt`, `cln`, `tl`) are frozen by the envelope
  * format, and this is the only place outside the payload codec that names them.
  * Spreading them through app code would put a format detail in fifty files and
  * turn renaming one into a migration across every client at once.
@@ -53,6 +53,7 @@ export interface TextRow extends SealedColumns {
   description?: string | null;
   notes?: string | null;
   customLocationName?: string | null;
+  title?: string | null;
 }
 
 /**
@@ -71,6 +72,32 @@ export function encNotes(row: TextRow, opened?: OpenedRecord): Enc<string | null
 
 export function encCustomLocationName(row: TextRow, opened?: OpenedRecord): Enc<string | null> {
   return encField(row, row.customLocationName ?? null, pick(opened, opened?.payload?.cln), null);
+}
+
+/** Deprecated on new Reads, still present on old ones. */
+export function encTitle(row: TextRow, opened?: OpenedRecord): Enc<string | null> {
+  return encField(row, row.title ?? null, pick(opened, opened?.payload?.tl), null);
+}
+
+/**
+ * A Read in the shape every helper above expects.
+ *
+ * Read is the one table whose columns are named differently -- `pointLat`,
+ * `pointLon`, `note` -- and two clients each inventing their own mapping is two
+ * chances to read `hasLocation` off the wrong field and plot a cell centroid as
+ * though it were the spot. One mapping, here.
+ */
+export function readRow<T extends SealedColumns & {
+  pointLat?: number | null;
+  pointLon?: number | null;
+  note?: string | null;
+}>(read: T): T & RowLocation & TextRow {
+  return {
+    ...read,
+    latitude: read.pointLat ?? null,
+    longitude: read.pointLon ?? null,
+    notes: read.note ?? null,
+  };
 }
 
 export function encCoords(row: RowLocation, opened?: OpenedRecord): EncLocation {

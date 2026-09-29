@@ -48,6 +48,8 @@ export {
   encName,
   encNotes,
   encSpecies,
+  encTitle,
+  readRow,
 } from './read/payload';
 
 export {

@@ -32,11 +32,22 @@ export const MIGRATION_TABLES = [
   'Observation',
   'DuckShot',
   'UplandBirdShot',
+  // Appended, never inserted: the walk's cursor encodes a table name, so
+  // reordering this list strands anyone whose cursor points at a table that
+  // has moved. Appending only extends the walk for everyone already past it.
+  'Read',
 ] as const;
 
 export type MigrationTable = (typeof MIGRATION_TABLES)[number];
 
-/** A row as `GET /api/vault/migration/next` returns it. */
+/**
+ * A row as `GET /api/vault/migration/next` returns it.
+ *
+ * One shape for every table. Where a column is named differently in the
+ * database -- a Read stores its position as pointLat/pointLon and its note as
+ * `note` -- the server renames it into this shape, so the payload rules below
+ * stay one set of rules rather than one per table.
+ */
 export interface MigrationRow {
   id: string;
   latitude: number | null;
@@ -46,6 +57,7 @@ export interface MigrationRow {
   description?: string | null;
   notes?: string | null;
   customLocationName?: string | null;
+  title?: string | null;
   createdAt: string;
 }
 
@@ -62,6 +74,9 @@ export const PRIVATE_FIELDS: Record<MigrationTable, ReadonlyArray<keyof Migratio
   Observation: ['latitude', 'longitude', 'notes'],
   DuckShot: ['latitude', 'longitude', 'species', 'notes'],
   UplandBirdShot: ['latitude', 'longitude', 'species', 'notes'],
+  // `title` is deprecated and no longer written, but old rows still carry one
+  // and a field left out of the payload is deleted rather than hidden.
+  Read: ['latitude', 'longitude', 'notes', 'title'],
 };
 
 export interface PreparedRow {
@@ -92,6 +107,7 @@ export function preparePayload(table: MigrationTable, row: MigrationRow): Prepar
   if (fields.includes('customLocationName') && present(row.customLocationName)) {
     payload.cln = row.customLocationName;
   }
+  if (fields.includes('title') && present(row.title)) payload.tl = row.title;
 
   return {
     id: row.id,
