@@ -17,7 +17,7 @@ import { encodeUtf8, decodeUtf8 } from './utf8.js';
 /**
  * Wire keys. These are frozen: renaming one is a new envelope version, because
  * an old client opening a new record would silently read undefined and render a
- * catch with no species rather than failing.
+ * catch with no species rather than failing. Adding one is not: see KEY_ORDER.
  */
 export const PAYLOAD_KEYS = {
   lat: 'lat',
@@ -28,6 +28,7 @@ export const PAYLOAD_KEYS = {
   notes: 'nt',
   customLocationName: 'cln',
   title: 'tl',
+  targetSpecies: 'tsp',
 } as const;
 
 /** Serialisation order. Frozen. */
@@ -35,7 +36,18 @@ export const PAYLOAD_KEYS = {
 // vectors are bytes, so moving an existing key changes every one of them; a new
 // key on the end is a key old records simply do not carry, which decodePayload
 // already treats as absent.
-const KEY_ORDER: readonly string[] = ['lat', 'lng', 'sp', 'nm', 'ds', 'nt', 'cln', 'tl'];
+const KEY_ORDER: readonly string[] = ['lat', 'lng', 'sp', 'nm', 'ds', 'nt', 'cln', 'tl', 'tsp'];
+
+/**
+ * Keys whose value is a list of strings rather than one string.
+ *
+ * `tsp` is the first of them. A spot's target species is what the owner plans
+ * to fish for there, and it is a column of its own rather than free text, so it
+ * travels as the array it is instead of being joined and split back by every
+ * client. JSON.stringify of a string array preserves order and quoting exactly,
+ * so the bytes stay as reproducible as every other key's.
+ */
+const STRING_LIST_KEYS: ReadonlySet<string> = new Set(['tsp']);
 
 export interface VaultPayload {
   lat?: number;
@@ -52,6 +64,14 @@ export interface VaultPayload {
   cln?: string;
   /** title (Read) */
   tl?: string;
+  /**
+   * targetSpecies (Spot).
+   *
+   * Omitted when empty rather than written as `[]`, the same rule every other
+   * key follows: an absent field reads as empty once opened, which is what it
+   * was.
+   */
+  tsp?: string[];
 }
 
 /**
@@ -70,6 +90,10 @@ export function encodePayload(payload: VaultPayload): Uint8Array {
     if (key === 'lat' || key === 'lng') {
       if (typeof value !== 'number' || !Number.isFinite(value)) {
         throw new VaultFormatError(`${key} must be a finite number`, 'VAULT_BAD_PAYLOAD');
+      }
+    } else if (STRING_LIST_KEYS.has(key)) {
+      if (!Array.isArray(value) || value.some((item) => typeof item !== 'string')) {
+        throw new VaultFormatError(`${key} must be an array of strings`, 'VAULT_BAD_PAYLOAD');
       }
     } else if (typeof value !== 'string') {
       throw new VaultFormatError(`${key} must be a string`, 'VAULT_BAD_PAYLOAD');
@@ -117,6 +141,11 @@ export function decodePayload(bytes: Uint8Array): VaultPayload {
     if (key === 'lat' || key === 'lng') {
       if (typeof value !== 'number' || !Number.isFinite(value)) {
         throw new VaultFormatError(`${key} must be a finite number`, 'VAULT_BAD_PAYLOAD');
+      }
+      (out as Record<string, unknown>)[key] = value;
+    } else if (STRING_LIST_KEYS.has(key)) {
+      if (!Array.isArray(value) || value.some((item) => typeof item !== 'string')) {
+        throw new VaultFormatError(`${key} must be an array of strings`, 'VAULT_BAD_PAYLOAD');
       }
       (out as Record<string, unknown>)[key] = value;
     } else {

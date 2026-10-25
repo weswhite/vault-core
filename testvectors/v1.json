@@ -138,6 +138,16 @@
         "nt": "ångström — café 🐟"
       },
       "jsonBytesHex": "7b227370223a22736ac3b672696e67222c226e74223a22c3a56e67737472c3b66d20e2809420636166c3a920f09f909f227d"
+    },
+    {
+      "payload": {
+        "nm": "Cedar Hole",
+        "tsp": [
+          "Arctic Grayling",
+          "Brown trout"
+        ]
+      },
+      "jsonBytesHex": "7b226e6d223a22436564617220486f6c65222c22747370223a5b2241726374696320477261796c696e67222c2242726f776e2074726f7574225d7d"
     }
   ],
   "aad": [

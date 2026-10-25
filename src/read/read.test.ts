@@ -13,6 +13,7 @@ import {
   encField,
   encLocation,
   encSpecies,
+  encTargetSpecies,
   encName,
   encNotes,
   encDescription,
@@ -135,6 +136,7 @@ describe('the wire keys', () => {
       ds: 'Deep seam, fishes best at dusk',
       nt: 'Size 18 pheasant tail',
       cln: 'Back channel',
+      tsp: ['Arctic Grayling', 'Brown trout'],
       lat: LAT,
       lng: LNG,
     },
@@ -148,6 +150,7 @@ describe('the wire keys', () => {
     expect(encDescription(sealed, payload).value).toBe('Deep seam, fishes best at dusk');
     expect(encNotes(sealed, payload).value).toBe('Size 18 pheasant tail');
     expect(encCustomLocationName(sealed, payload).value).toBe('Back channel');
+    expect(encTargetSpecies(sealed, payload).value).toEqual(['Arctic Grayling', 'Brown trout']);
   });
 
   it('gives coordinates only through the location type', () => {
@@ -183,6 +186,44 @@ describe('placeholders before unlock', () => {
     expect(encNotes(sealed).value).toBeNull();
     expect(encDescription(sealed).value).toBeNull();
     expect(encCustomLocationName(sealed).value).toBeNull();
+  });
+});
+
+describe("a spot's target species", () => {
+  const SPOT = ['Arctic Grayling', 'Brown trout'];
+
+  it('is empty, not a word, while locked', () => {
+    // The nullable-text rule rather than the species rule: there is nothing to
+    // show, and a placeholder word in a list of species would read as a species.
+    const field = encTargetSpecies({ ...sealed, targetSpecies: [] });
+
+    expect(field.state).toBe('locked');
+    expect(field.value).toEqual([]);
+  });
+
+  it('comes back in the order it was sealed in', () => {
+    expect(encTargetSpecies(sealed, { payload: { tsp: SPOT } }).value).toEqual(SPOT);
+  });
+
+  it('reads as empty once opened when the spot had none', () => {
+    expect(encTargetSpecies(sealed, { payload: {} })).toEqual({ state: 'open', value: [] });
+  });
+
+  it('passes a plaintext spot straight through', () => {
+    expect(encTargetSpecies({ targetSpecies: SPOT })).toEqual({ state: 'plain', value: SPOT });
+  });
+
+  it('marks a record that would not open', () => {
+    const field = encTargetSpecies({ ...sealed, targetSpecies: [] }, { failed: true });
+
+    expect(field.state).toBe('failed');
+    expect(realValue(field)).toBeNull();
+  });
+
+  it('gives null through realValue while locked, so nothing treats it as data', () => {
+    // The point of realValue: a search index or an export must not pick up a
+    // placeholder, and here the placeholder is an innocent-looking empty list.
+    expect(realValue(encTargetSpecies({ ...sealed, targetSpecies: [] }))).toBeNull();
   });
 });
 
