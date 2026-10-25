@@ -58,6 +58,7 @@ export interface MigrationRow {
   notes?: string | null;
   customLocationName?: string | null;
   title?: string | null;
+  targetSpecies?: string[] | null;
   createdAt: string;
 }
 
@@ -68,7 +69,11 @@ export interface MigrationRow {
  * deleting that field from every migrated row.
  */
 export const PRIVATE_FIELDS: Record<MigrationTable, ReadonlyArray<keyof MigrationRow>> = {
-  Spot: ['latitude', 'longitude', 'name', 'description', 'notes'],
+  // targetSpecies is in here because it is a species list bound to a place,
+  // and a sealed spot keeps a ~20km cell. Leaving it out left "Arctic Grayling"
+  // readable beside that cell on a row whose every other private field was
+  // ciphertext.
+  Spot: ['latitude', 'longitude', 'name', 'description', 'notes', 'targetSpecies'],
   FishingSession: ['latitude', 'longitude', 'notes', 'customLocationName'],
   FishCatch: ['latitude', 'longitude', 'species', 'notes'],
   Observation: ['latitude', 'longitude', 'notes'],
@@ -108,6 +113,11 @@ export function preparePayload(table: MigrationTable, row: MigrationRow): Prepar
     payload.cln = row.customLocationName;
   }
   if (fields.includes('title') && present(row.title)) payload.tl = row.title;
+  // Empty lists are omitted, like empty strings: once opened, an absent field
+  // reads as empty, which is what it was.
+  if (fields.includes('targetSpecies') && row.targetSpecies?.length) {
+    payload.tsp = row.targetSpecies;
+  }
 
   return {
     id: row.id,

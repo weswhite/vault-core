@@ -261,6 +261,66 @@ describe('a table this client has never heard of', () => {
   });
 });
 
+describe('a Spot', () => {
+  it('seals its target species along with the rest', () => {
+    // A species list bound to a place. A sealed spot keeps a geohash-4 cell
+    // about 20km across, and a species beside that cell is most of what the
+    // vault is for. It was left out at first and stayed readable on a row whose
+    // every other private field was ciphertext.
+    const prepared = preparePayload('Spot', {
+      id: 's1',
+      latitude: 45.678912,
+      longitude: -111.042934,
+      name: 'Cedar Hole',
+      description: 'Below the bridge',
+      notes: '150 yards below the gravel bar',
+      targetSpecies: ['Arctic Grayling', 'Brown trout'],
+      createdAt: '2026-01-01T00:00:00.000Z',
+    });
+
+    expect(prepared.payload).toEqual({
+      lat: 45.678912,
+      lng: -111.042934,
+      nm: 'Cedar Hole',
+      ds: 'Below the bridge',
+      nt: '150 yards below the gravel bar',
+      tsp: ['Arctic Grayling', 'Brown trout'],
+    });
+  });
+
+  it('keeps the order the user chose', () => {
+    // Not sorted. The first entry is the one a spot is really for, and the
+    // bytes have to match on all three platforms anyway.
+    const prepared = preparePayload('Spot', {
+      id: 's2',
+      latitude: 1,
+      longitude: 2,
+      name: 'n',
+      targetSpecies: ['Walleye', 'Arctic Grayling'],
+      createdAt: '2026-01-01T00:00:00.000Z',
+    });
+
+    expect(prepared.payload.tsp).toEqual(['Walleye', 'Arctic Grayling']);
+  });
+
+  it('omits an empty list rather than sealing one', () => {
+    // Same rule as an empty string: an absent field reads as empty once
+    // opened, which is what it was.
+    for (const targetSpecies of [[], null, undefined]) {
+      const prepared = preparePayload('Spot', {
+        id: 's3',
+        latitude: 1,
+        longitude: 2,
+        name: 'n',
+        targetSpecies,
+        createdAt: '2026-01-01T00:00:00.000Z',
+      });
+
+      expect(prepared.payload.tsp).toBeUndefined();
+    }
+  });
+});
+
 describe('a Read', () => {
   it('seals its point, note and title, and nothing else', () => {
     // A Read is the one table whose columns are named differently, so the

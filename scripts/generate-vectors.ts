@@ -135,6 +135,11 @@ const payloads: Record<string, unknown>[] = [
       ' ' +
       String.fromCharCode(0xd83d, 0xdc1f),
   },
+  // Appended, so every index above keeps its meaning and every existing vector
+  // keeps its bytes. `tsp` is the first list-valued key, and the thing worth
+  // pinning is that a string array serialises identically on all three
+  // platforms: order kept, nothing sorted, nothing joined.
+  { nm: 'Cedar Hole', tsp: ['Arctic Grayling', 'Brown trout'] },
 ];
 
 const headerForAad = hexToBytes('574c5631' + '01' + '01' + '01' + '00');

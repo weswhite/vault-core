@@ -41,6 +41,7 @@ export {
   type NamedRow,
   type OpenedRecord,
   type SpeciesRow,
+  type TargetSpeciesRow,
   type TextRow,
   encCoords,
   encCustomLocationName,
@@ -48,6 +49,7 @@ export {
   encName,
   encNotes,
   encSpecies,
+  encTargetSpecies,
   encTitle,
   readRow,
 } from './read/payload';

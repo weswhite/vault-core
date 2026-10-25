@@ -1,7 +1,7 @@
 /**
  * Row plus decrypted payload, out come `Enc` fields.
  *
- * The short wire keys (`sp`, `nm`, `ds`, `nt`, `cln`, `tl`) are frozen by the envelope
+ * The short wire keys (`sp`, `nm`, `ds`, `nt`, `cln`, `tl`, `tsp`) are frozen by the envelope
  * format, and this is the only place outside the payload codec that names them.
  * Spreading them through app code would put a format detail in fifty files and
  * turn renaming one into a migration across every client at once.
@@ -47,6 +47,26 @@ export interface NamedRow extends SealedColumns {
 
 export function encName(row: NamedRow, opened?: OpenedRecord): Enc<string> {
   return encField(row, row.name ?? PLACEHOLDER_SPOT_NAME, pick(opened, opened?.payload?.nm), '');
+}
+
+export interface TargetSpeciesRow extends SealedColumns {
+  targetSpecies?: string[] | null;
+}
+
+/**
+ * A spot's target species: what the owner plans to fish for there.
+ *
+ * Sealed, because it is a species list attached to a place. A sealed spot keeps
+ * a geohash-4 cell, about 20km across, and "Arctic Grayling" beside that cell
+ * is most of what the vault exists to withhold. Enrollment promises species are
+ * encrypted and means this one too.
+ *
+ * The placeholder is an empty list rather than a word, like the nullable text
+ * fields: there is nothing to show, and the app decides whether that means
+ * hiding the row or marking it locked.
+ */
+export function encTargetSpecies(row: TargetSpeciesRow, opened?: OpenedRecord): Enc<string[]> {
+  return encField(row, row.targetSpecies ?? [], pick(opened, opened?.payload?.tsp), []);
 }
 
 export interface TextRow extends SealedColumns {
