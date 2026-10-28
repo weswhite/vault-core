@@ -49,12 +49,30 @@ const SALT_HEX = '404142434445464748494a4b4c4d4e4f';
 const NONCE_HEX = '505152535455565758595a5b5c5d5e5f6061626364656667';
 const USER_ID = 'cku1a2b3c4d5e6f7g8h9i0j1';
 
-// A known-good 24-word BIP-39 mnemonic. All-zero entropy, so it is verifiable
-// against any other BIP-39 implementation.
-const RECOVERY_CODE =
-  'abandon abandon abandon abandon abandon abandon abandon abandon ' +
-  'abandon abandon abandon abandon abandon abandon abandon abandon ' +
-  'abandon abandon abandon abandon abandon abandon abandon art';
+// Known-good BIP-39 mnemonics, all verifiable against any other BIP-39
+// implementation: all-zero entropy, all-0x7f, and all-0xff.
+const RECOVERY_CODES = [
+  `${'abandon '.repeat(11)}about`,
+  'legal winner thank year wave sausage worth useful legal winner thank yellow',
+  `${'zoo '.repeat(11)}wrong`,
+];
+
+// The separators a code picks up on its way through a password manager or a
+// notes app: NBSP, newline, tab, stray case and padding. Same entropy as the
+// second code above, which is the point.
+const MANGLED_RECOVERY_CODE =
+  'LEGAL\u00a0WINNER THANK\nyear\twave sausage worth useful legal winner thank YELLOW  ';
+
+// The retired 24-word length. Still a valid BIP-39 mnemonic with all-zero
+// entropy, which is why it earns a vector: every platform has to refuse it on
+// length alone, not because it happens to look malformed.
+//
+// It is also the UTF-8 secret of a released wrap vector, whose recorded blob is
+// a frozen byte contract. That vector never derives a key from this string, it
+// only wraps with it, so retiring the length leaves it untouched. Swapping it
+// for a 12-word string would change the recorded blob, which is the one thing
+// an append-only vector file forbids.
+const RETIRED_24_WORD_CODE = `${'abandon '.repeat(23)}art`;
 
 const keypair = vaultKeypairFromDataKey(hexToBytes(DATA_KEY_HEX));
 const fingerprint = fingerprintPublicKey(keypair.publicKey);
@@ -231,17 +249,26 @@ const vectors: VectorFile = {
   wrap: [
     wrapVector('123456', WRAP_TYPE_PIN, ARGON2_TEST_ONLY),
     wrapVector('a longer passphrase for web', WRAP_TYPE_PIN, ARGON2_TEST_ONLY),
-    wrapVector(RECOVERY_CODE, WRAP_TYPE_RECOVERY, ARGON2_TEST_ONLY),
+    wrapVector(RETIRED_24_WORD_CODE, WRAP_TYPE_RECOVERY, ARGON2_TEST_ONLY),
     // Production cost. Skipped unless includeSlow, so CI stays fast but the
     // real parameters are still pinned somewhere.
     wrapVector('123456', WRAP_TYPE_PIN, ARGON2_INTERACTIVE, true),
   ],
 
-  recovery: [RECOVERY_CODE, `  ${RECOVERY_CODE.toUpperCase()}  `].map((raw) => ({
-    raw,
-    normalized: normalizeRecoveryCode(raw),
-    entropyHex: bytesToHex(recoveryCodeToKey(raw)),
-  })),
+  recovery: [
+    // The two released 24-word vectors, kept and flipped to `refused`. The file
+    // is append-only; see the note on `refused` in src/testvectors.ts.
+    ...[RETIRED_24_WORD_CODE, `  ${RETIRED_24_WORD_CODE.toUpperCase()}  `].map((raw) => ({
+      raw,
+      normalized: normalizeRecoveryCode(raw),
+      refused: true as const,
+    })),
+    ...[...RECOVERY_CODES, MANGLED_RECOVERY_CODE].map((raw) => ({
+      raw,
+      normalized: normalizeRecoveryCode(raw),
+      entropyHex: bytesToHex(recoveryCodeToKey(raw)),
+    })),
+  ],
 };
 
 const here = dirname(fileURLToPath(import.meta.url));

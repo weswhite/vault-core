@@ -143,8 +143,9 @@ export function parseWrapHeader(bytes: Uint8Array): WrapHeader {
    *
    *   PIN       ~20 bits, guessable. Cost is the only thing standing in the
    *             way, so a cheap PIN wrap is refused outright.
-   *   RECOVERY  24 words, 256 bits. Guessing is impossible at any cost, and the
-   *             floor only has to catch nonsense.
+   *   RECOVERY  12 words, 128 bits (24 and 256 through 0.6.0). Guessing is
+   *             impossible at either size and at any cost, so the floor only
+   *             has to catch nonsense.
    *
    * A single floor could not say that, and the one that was here (1 MiB for
    * everything) took five minutes on a mid-range Android for the wrap that

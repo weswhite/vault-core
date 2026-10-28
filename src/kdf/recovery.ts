@@ -1,5 +1,5 @@
 /**
- * The 24-word recovery code.
+ * The recovery code.
  *
  * This is the only way back into a vault after a lost phone, and the only wrap
  * stored on our servers. If a user loses both their PIN and this code, their
@@ -12,27 +12,37 @@
  * recognises, and hand-rolling one is the kind of thing that looks fine until a
  * homograph pair makes a code undecodable.
  *
- * 24 words is 264 bits: 256 bits of entropy plus an 8-bit checksum. The checksum
+ * 12 words is 132 bits: 128 bits of entropy plus a 4-bit checksum. The checksum
  * is what lets the UI reject a mistyped word before the user believes they have
- * a working code.
+ * a working code, and it is the one thing that got weaker when the code got
+ * shorter: it catches 15 of every 16 bad codes rather than 255 of 256. It was
+ * never a security property. A wrong key fails the wrap's AEAD tag either way,
+ * so the cost of a miss is an Argon2 the user waits out before being told no,
+ * which on the slowest phone we have measured is 0.8 s.
+ *
+ * 12 words is the only length accepted. See RECOVERY_WORD_COUNT for why 24 is
+ * not.
  */
 
 import { generateMnemonic, mnemonicToEntropy, validateMnemonic } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
+import { RECOVERY_WORD_COUNT } from '../recoveryWords.js';
 import type { Argon2Params } from '../crypto/provider.js';
 
-export const RECOVERY_WORD_COUNT = 24;
-const ENTROPY_BITS = 256;
+export { RECOVERY_WORD_COUNT };
+
+const ENTROPY_BITS = 128;
 
 /**
  * Recovery wraps use cheap Argon2 parameters, and must.
  *
  * Argon2 cost exists to make guessing expensive. A 6-digit PIN has roughly 20
- * bits of entropy and needs every bit of slowdown available. A 24-word code has
- * 256 bits: at a trillion guesses a second with no key derivation cost at all,
- * exhausting it takes about 10^57 years. Cost added on top of that defends
- * against nothing, and it is charged to someone who has just lost their phone
- * and is typing 24 words into a new one.
+ * bits of entropy and needs every bit of slowdown available. A 12-word code has
+ * 128 bits: at a trillion guesses a second with no key derivation cost at all,
+ * exhausting it takes about 10^19 years, a billion times the age of the
+ * universe. Cost added on top of that defends against nothing, and it is
+ * charged to someone who has just lost their phone and is typing the code into
+ * a new one.
  *
  * These numbers are not a guess. Measured in pure JS on Hermes, on a Galaxy A17
  * (2026-09-20), deriving one key:
@@ -53,7 +63,7 @@ const ENTROPY_BITS = 256;
  * differ, and wraps made before this change keep opening with their own.
  *
  * This holds only while the recovery code is machine-generated. A code the user
- * invents is not 256 bits, and cost would have to come back with it -- which on
+ * invents is not 128 bits, and cost would have to come back with it -- which on
  * a phone means a native Argon2 binding, not a bigger number here.
  */
 export const ARGON2_RECOVERY: Argon2Params = {
@@ -151,11 +161,15 @@ export function isValidRecoveryCode(raw: string): boolean {
 }
 
 /**
- * The 32 bytes used as the Argon2 password for the recovery wrap.
+ * The 16 bytes used as the Argon2 password for the recovery wrap.
  *
  * Deliberately the BIP-39 entropy rather than the UTF-8 words: it is fixed
- * length, and it means a code that differs only in whitespace or case produces
- * the same key without relying on normalisation having been perfect.
+ * length for a given code length, and it means a code that differs only in
+ * whitespace or case produces the same key without relying on normalisation
+ * having been perfect.
+ *
+ * wrapDataKey asks only that a secret be non-empty, so the 16-byte password
+ * needs nothing there.
  */
 export function recoveryCodeToKey(raw: string): Uint8Array {
   const normalized = normalizeRecoveryCode(raw);
@@ -182,7 +196,7 @@ export function recoveryCodeToKey(raw: string): Uint8Array {
 }
 
 /**
- * Split into groups for display. Grouping is what makes a 24-word code
+ * Split into groups for display. Grouping is what makes a recovery code
  * transcribable without losing your place.
  */
 export function formatRecoveryCode(code: string, groupSize = 4): string[][] {
@@ -200,17 +214,23 @@ export function formatRecoveryCode(code: string, groupSize = 4): string[][] {
  * Verification is not optional ceremony. Without it people screenshot the
  * screen, never check it, and discover at recovery time that they saved the
  * wrong thing.
+ *
+ * `wordCount` defaults to the length we generate, which is what enrollment
+ * always has in hand. A caller holding the code should pass its real length
+ * instead: this returns positions into a list of words on screen, and a number
+ * past the end of that list quizzes the user on a blank.
  */
 export function pickVerificationIndices(
   count: number,
   random: (max: number) => number,
+  wordCount: number = RECOVERY_WORD_COUNT,
 ): number[] {
-  if (count < 1 || count > RECOVERY_WORD_COUNT) {
-    throw new RecoveryCodeError(`cannot verify ${count} of ${RECOVERY_WORD_COUNT} words`);
+  if (count < 1 || count > wordCount) {
+    throw new RecoveryCodeError(`cannot verify ${count} of ${wordCount} words`);
   }
   const chosen = new Set<number>();
   while (chosen.size < count) {
-    chosen.add(random(RECOVERY_WORD_COUNT));
+    chosen.add(random(wordCount));
   }
   return Array.from(chosen).sort((a, b) => a - b);
 }
