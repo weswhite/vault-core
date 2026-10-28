@@ -20,19 +20,16 @@
  * so the cost of a miss is an Argon2 the user waits out before being told no,
  * which on the slowest phone we have measured is 0.8 s.
  *
- * Codes issued before 0.7.0 are 24 words and still open. See
- * ACCEPTED_RECOVERY_WORD_COUNTS.
+ * 12 words is the only length accepted. See RECOVERY_WORD_COUNT for why 24 is
+ * not.
  */
 
 import { generateMnemonic, mnemonicToEntropy, validateMnemonic } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
-import {
-  ACCEPTED_RECOVERY_WORD_COUNTS,
-  RECOVERY_WORD_COUNT,
-} from '../recoveryWords.js';
+import { RECOVERY_WORD_COUNT } from '../recoveryWords.js';
 import type { Argon2Params } from '../crypto/provider.js';
 
-export { ACCEPTED_RECOVERY_WORD_COUNTS, RECOVERY_WORD_COUNT };
+export { RECOVERY_WORD_COUNT };
 
 const ENTROPY_BITS = 128;
 
@@ -155,7 +152,7 @@ export function generateRecoveryCode(): string {
 export function isValidRecoveryCode(raw: string): boolean {
   const normalized = normalizeRecoveryCode(raw);
   if (normalized.length === 0) return false;
-  if (!ACCEPTED_RECOVERY_WORD_COUNTS.includes(normalized.split(' ').length)) return false;
+  if (normalized.split(' ').length !== RECOVERY_WORD_COUNT) return false;
   try {
     return validateMnemonic(normalized, wordlist);
   } catch {
@@ -164,26 +161,23 @@ export function isValidRecoveryCode(raw: string): boolean {
 }
 
 /**
- * The bytes used as the Argon2 password for the recovery wrap: 16 for a 12-word
- * code, 32 for a 24-word one issued before 0.7.0.
+ * The 16 bytes used as the Argon2 password for the recovery wrap.
  *
  * Deliberately the BIP-39 entropy rather than the UTF-8 words: it is fixed
  * length for a given code length, and it means a code that differs only in
  * whitespace or case produces the same key without relying on normalisation
  * having been perfect.
  *
- * wrapDataKey asks only that a secret be non-empty, so the shorter password
- * needs nothing there, and a 24-word code still derives the same 32 bytes it
- * always did. That second part is a byte contract, and it is the whole reason an
- * existing recovery wrap keeps opening.
+ * wrapDataKey asks only that a secret be non-empty, so the 16-byte password
+ * needs nothing there.
  */
 export function recoveryCodeToKey(raw: string): Uint8Array {
   const normalized = normalizeRecoveryCode(raw);
 
   const words = normalized.length === 0 ? [] : normalized.split(' ');
-  if (!ACCEPTED_RECOVERY_WORD_COUNTS.includes(words.length)) {
+  if (words.length !== RECOVERY_WORD_COUNT) {
     throw new RecoveryCodeError(
-      `recovery code must be ${ACCEPTED_RECOVERY_WORD_COUNTS.join(' or ')} words, got ${words.length}`,
+      `recovery code must be ${RECOVERY_WORD_COUNT} words, got ${words.length}`,
       'VAULT_RECOVERY_WRONG_LENGTH',
     );
   }

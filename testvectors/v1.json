@@ -298,12 +298,12 @@
     {
       "raw": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art",
       "normalized": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art",
-      "entropyHex": "0000000000000000000000000000000000000000000000000000000000000000"
+      "refused": true
     },
     {
       "raw": "  ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ABANDON ART  ",
       "normalized": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art",
-      "entropyHex": "0000000000000000000000000000000000000000000000000000000000000000"
+      "refused": true
     },
     {
       "raw": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about",
@@ -321,7 +321,7 @@
       "entropyHex": "ffffffffffffffffffffffffffffffff"
     },
     {
-      "raw": "LEGAL\u00a0WINNER THANK\nyear\twave sausage worth useful legal winner thank YELLOW  ",
+      "raw": "LEGAL WINNER THANK\nyear\twave sausage worth useful legal winner thank YELLOW  ",
       "normalized": "legal winner thank year wave sausage worth useful legal winner thank yellow",
       "entropyHex": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f"
     }

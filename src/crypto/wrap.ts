@@ -143,7 +143,7 @@ export function parseWrapHeader(bytes: Uint8Array): WrapHeader {
    *
    *   PIN       ~20 bits, guessable. Cost is the only thing standing in the
    *             way, so a cheap PIN wrap is refused outright.
-   *   RECOVERY  12 words, 128 bits (24 and 256 before 0.7.0). Guessing is
+   *   RECOVERY  12 words, 128 bits (24 and 256 through 0.6.0). Guessing is
    *             impossible at either size and at any cost, so the floor only
    *             has to catch nonsense.
    *

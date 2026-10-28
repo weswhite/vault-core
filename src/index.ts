@@ -77,10 +77,7 @@ export { encodeCell, cellCentroid, cellBounds } from './geo/geohash.js';
 
 export { normalizeSpecies } from './species/normalize.js';
 
-export {
-  RECOVERY_WORD_COUNT,
-  ACCEPTED_RECOVERY_WORD_COUNTS,
-} from './recoveryWords.js';
+export { RECOVERY_WORD_COUNT } from './recoveryWords.js';
 
 export { encodeCursor, decodeCursor } from './cursor/cursor.js';
 

@@ -46,6 +46,7 @@ import {
   fingerprintPublicKey,
   recoveryCodeToKey,
   normalizeRecoveryCode,
+  isValidRecoveryCode,
 } from './crypto.js';
 
 /** Minimal assertion surface, so this runs under vitest, jest, or bare node. */
@@ -105,7 +106,21 @@ export interface VectorFile {
     /** Slow vectors use production Argon2 costs; skipped unless includeSlow. */
     slow?: boolean;
   }>;
-  recovery: Array<{ raw: string; normalized: string; entropyHex: string }>;
+  recovery: Array<{
+    raw: string;
+    normalized: string;
+    /** The BIP-39 entropy this code derives. Absent when `refused`. */
+    entropyHex?: string;
+    /**
+     * This length is retired and every platform must reject it.
+     *
+     * Kept rather than deleted, though the file is append-only, because a
+     * deleted vector asserts nothing. A platform holding a stale length check
+     * that still accepts 24 words is exactly the drift these vectors exist to
+     * catch, and only a vector that demands refusal catches it.
+     */
+    refused?: true;
+  }>;
 }
 
 export interface RunOptions {
@@ -290,7 +305,23 @@ export function runVectorSuite(
 
   for (const v of vectors.recovery) {
     check(`recovery "${v.raw.substring(0, 24)}"`, () => {
+      // Normalisation is length-agnostic and still asserted for a refused
+      // code: a platform that mangles whitespace would otherwise reject a good
+      // code for the wrong reason and report it as the wrong length.
       assert.equal(normalizeRecoveryCode(v.raw), v.normalized, 'normalized');
+
+      if (v.refused) {
+        assert.equal(isValidRecoveryCode(v.raw), false, 'retired length validates');
+        let threw = false;
+        try {
+          recoveryCodeToKey(v.raw);
+        } catch {
+          threw = true;
+        }
+        assert.equal(threw, true, 'retired length derived a key');
+        return;
+      }
+
       assert.equal(bytesToHex(recoveryCodeToKey(v.raw)), v.entropyHex, 'entropy');
     });
   }

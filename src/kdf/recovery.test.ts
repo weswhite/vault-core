@@ -1,17 +1,16 @@
 /**
- * The recovery code shrank to 12 words in 0.7.0, and 24-word codes must keep
- * opening forever.
+ * The recovery code is 12 words, and that is the only length anything accepts.
  *
- * That second half is the part worth a test. The recovery wrap is the only wrap
- * on our servers, it was derived from a 24-word code for everyone who enrolled
- * before 0.7.0, and nothing re-wraps it. A length check that accepts only 12
- * would read as a tidy cleanup and would lock those people out of their own
- * data with no path back.
+ * 24 is refused, and that refusal has a test because of what it would cost if
+ * it were ever wrong in the other direction. A recovery wrap is derived from the
+ * code, it is the only wrap on our servers, and nothing on our side can
+ * re-derive it. So a 24-word code reaching this code path at all would mean a
+ * vault exists that 0.7.0 cannot open. None did when 24 was retired, which is
+ * the only reason retiring it was safe.
  */
 
 import { describe, it, expect } from 'vitest';
 import {
-  ACCEPTED_RECOVERY_WORD_COUNTS,
   ARGON2_TEST_ONLY,
   RECOVERY_WORD_COUNT,
   RecoveryCodeError,
@@ -25,8 +24,8 @@ import {
 } from '../crypto.js';
 import { WRAP_TYPE_RECOVERY } from '../version.js';
 
-/** The BIP-39 all-zeros codes at both lengths. */
-const LEGACY_24 = `${'abandon '.repeat(23)}art`;
+/** The BIP-39 all-zeros codes at 24 words (retired) and 12 (current). */
+const RETIRED_24 = `${'abandon '.repeat(23)}art`;
 const CURRENT_12 = `${'abandon '.repeat(11)}about`;
 
 describe('generating a code', () => {
@@ -46,23 +45,22 @@ describe('generating a code', () => {
   });
 });
 
-describe('a 24-word code from before 0.7.0', () => {
-  it('still validates', () => {
-    expect(isValidRecoveryCode(LEGACY_24)).toBe(true);
+describe('a 24-word code', () => {
+  it('does not validate, though it is a valid BIP-39 mnemonic', () => {
+    // The checksum is fine. The length is what rejects it, which is the whole
+    // point: this is a well-formed code for a vault that cannot exist.
+    expect(isValidRecoveryCode(RETIRED_24)).toBe(false);
   });
 
-  it('still derives the same 32 bytes', () => {
-    // A byte contract. These are the bytes an existing recovery wrap on our
-    // servers was built against; change them and that wrap stops opening.
-    const key = recoveryCodeToKey(LEGACY_24);
-
-    expect(key).toHaveLength(32);
-    expect(Array.from(key).every((byte) => byte === 0)).toBe(true);
-  });
-
-  it('is still listed as accepted', () => {
-    expect(ACCEPTED_RECOVERY_WORD_COUNTS).toContain(24);
-    expect(ACCEPTED_RECOVERY_WORD_COUNTS).toContain(12);
+  it('derives nothing, and says the length is why', () => {
+    let thrown: unknown;
+    try {
+      recoveryCodeToKey(RETIRED_24);
+    } catch (err) {
+      thrown = err;
+    }
+    expect(thrown).toBeInstanceOf(RecoveryCodeError);
+    expect((thrown as RecoveryCodeError).code).toBe('VAULT_RECOVERY_WRONG_LENGTH');
   });
 });
 
@@ -76,7 +74,7 @@ describe('a wrong length', () => {
     expect(isValidRecoveryCode(code)).toBe(false);
   });
 
-  it('throws naming both accepted lengths', () => {
+  it('throws naming the one accepted length', () => {
     let thrown: unknown;
     try {
       recoveryCodeToKey('abandon abandon abandon');
@@ -85,7 +83,7 @@ describe('a wrong length', () => {
     }
     expect(thrown).toBeInstanceOf(RecoveryCodeError);
     expect((thrown as RecoveryCodeError).code).toBe('VAULT_RECOVERY_WRONG_LENGTH');
-    expect((thrown as RecoveryCodeError).message).toContain('12 or 24');
+    expect((thrown as RecoveryCodeError).message).toContain('must be 12 words');
   });
 });
 
@@ -131,19 +129,21 @@ describe('verification positions', () => {
     expect(picked.every((i) => i >= 0 && i < 12)).toBe(true);
   });
 
-  it('span the length the caller passes', () => {
-    // A deterministic walk, so the set fills without a random source.
+  it('span the length the caller passes, not the default', () => {
+    // Enrollment passes the real length of the code in hand rather than
+    // trusting the constant. A deterministic walk, so the set fills without a
+    // random source.
     let next = -1;
     const picked = pickVerificationIndices(
-      24,
+      6,
       (max) => {
         next = (next + 1) % max;
         return next;
       },
-      24,
+      6,
     );
-    expect(picked).toHaveLength(24);
-    expect(Math.max(...picked)).toBe(23);
+    expect(picked).toHaveLength(6);
+    expect(Math.max(...picked)).toBe(5);
   });
 
   it('refuses to quiz more words than the code has', () => {
