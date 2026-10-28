@@ -3,7 +3,7 @@
  *
  * The cost floor is the interesting part. It depends on what the wrap protects,
  * because that is what Argon2 cost is for: a PIN is guessable and cost is the
- * only thing in the way, while a 24-word code is not guessable at any cost.
+ * only thing in the way, while a recovery code is not guessable at any cost.
  * A single floor could not say that, and the one that used to be here made the
  * recovery path take five minutes on a mid-range Android.
  */

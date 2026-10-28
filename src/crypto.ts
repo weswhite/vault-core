@@ -42,6 +42,7 @@ export type { Argon2Params, Argon2Provider, RandomProvider } from './crypto/prov
 
 export {
   RECOVERY_WORD_COUNT,
+  ACCEPTED_RECOVERY_WORD_COUNTS,
   ARGON2_RECOVERY,
   RecoveryCodeError,
   normalizeRecoveryCode,
